@@ -1,0 +1,106 @@
+<!-- build configuration -->
+<project name="banguser-webapp" basedir="." xmlns:artifact="urn:maven-artifact-ant">
+  <property name="jsrc.dir" value="src/main/java"/>
+  <property name="ssrc.dir" value="src/main/scala"/>
+  <property name="target.dir" value="target"/>
+  <property name="classes.dir" value="${target.dir}/classes"/>
+  <property name="jar.file" location="${target.dir}/${ant.project.name}.jar"/>
+
+  <!-- bring in our standard build support -->
+  <property name="ooo-build.vers" value="2.9"/>
+  <ant antfile="etc/bootstrap.xml"/>
+  <import file="${user.home}/.m2/ooo-build/${ooo-build.vers}/ooo-build.xml"/>
+
+  <target name="-prepare" depends="-init-ooo">
+    <mkdir dir="${target.dir}"/>
+
+    <artifact:dependencies pathId="pom.classpath">
+      <pom file="pom.xml"/>
+    </artifact:dependencies>
+    <path id="build.classpath">
+      <path refid="pom.classpath"/>
+      <pathelement location="${classes.dir}"/>
+    </path>
+  </target>
+
+  <target name="clean" description="Cleans out compilation results.">
+    <delete dir="${target.dir}"/>
+  </target>
+
+  <target name="gmsgs" depends="-prepare" description="Updates our GWT i18n messages.">
+    <taskdef name="i18nsync" classname="com.threerings.gwt.tools.I18nSyncTask"
+             classpathref="pom.classpath"/>
+    <i18nsync srcdir="${jsrc.dir}">
+      <fileset dir="${jsrc.dir}" includes="**/*Messages.properties"/>
+    </i18nsync>
+  </target>
+
+  <target name="compile" depends="-prepare,gmsgs" description="Compiles the Java code.">
+    <mkdir dir="${classes.dir}"/>
+
+    <ooojavac srcdir="${jsrc.dir}" destdir="${classes.dir}" version="1.6"
+        classpathref="pom.classpath"/>
+
+    <artifact:dependencies pathId="scalac.classpath">
+      <dependency groupId="org.scala-lang" artifactId="scala-compiler" version="2.9.1"/>
+      <dependency groupId="org.scala-lang" artifactId="scala-library" version="2.9.1"/>
+    </artifact:dependencies>
+    <taskdef resource="scala/tools/ant/antlib.xml" classpathref="scalac.classpath"/>
+    <scalac srcdir="${ssrc.dir}" destdir="${classes.dir}" classpathref="build.classpath"/>
+  </target>
+
+  <target name="genasync" depends="compile" description="Regenerates GWT Async interfaces.">
+    <artifact:dependencies pathId="genasync.classpath">
+      <dependency groupId="com.samskivert" artifactId="gwt-asyncgen" version="1.0"/>
+    </artifact:dependencies>
+    <taskdef name="genasync" classname="com.samskivert.asyncgen.AsyncGenTask"
+             classpathref="genasync.classpath"/>
+    <genasync classpathref="build.classpath">
+      <fileset dir="${jsrc.dir}" includes="**/*Service.java"/>
+    </genasync>
+  </target>
+
+  <target name="gdevmode" depends="compile" description="Runs GWT devmode.">
+    <artifact:dependencies pathId="gwt-dev.classpath">
+      <dependency groupId="com.google.gwt" artifactId="gwt-dev" version="2.4.0"/>
+    </artifact:dependencies>
+    <java fork="true" classname="com.google.gwt.dev.DevMode">
+      <classpath>
+        <path refid="gwt-dev.classpath"/>
+        <path refid="build.classpath"/>
+        <pathelement path="${jsrc.dir}"/>
+      </classpath>
+      <jvmarg value="-Xmx512M"/>
+      <arg value="-war"/>
+      <arg value="${target.dir}/webapp"/>
+      <arg value="com.threerings.user.UserWebapp"/>
+    </java>
+  </target>
+
+  <!-- TODO: this should gcompile and create the war file -->
+  <target name="package" depends="compile" description="Builds and jars the code.">
+    <jar destfile="${jar.file}">
+      <fileset dir="${classes.dir}" includes="**"/>
+      <!-- include our GWT source materials -->
+      <fileset dir="${jsrc.dir}" includes="**"/>
+    </jar>
+  </target>
+
+  <target name="javadoc" depends="-prepare" description="Builds the Java documentation">
+    <mkdir dir="${target.dir}/docs"/>
+    <javadoc sourcepath="${jsrc.dir}" destdir="${target.dir}/docs"
+             additionalparam="-breakiterator" classpathref="build.classpath">
+      <link href="http://download.oracle.com/javase/6/docs/api/"/>
+      <link href="http://google-web-toolkit.googlecode.com/svn/javadoc/latest/"/>
+      <link href="http://samskivert.github.com/samskivert/apidocs/"/>
+    </javadoc>
+  </target>
+
+  <target name="install" depends="package" description="Installs to local Maven repository.">
+    <maveninstall file="${jar.file}" pom="pom.xml"/>
+  </target>
+
+  <target name="deploy" depends="package,javadoc" description="Deploys to remote Maven repository.">
+    <mavendeploy file="${jar.file}" pom="pom.xml" srcdir="${jsrc.dir}" docdir="${target.dir}/docs"/>
+  </target>
+</project>
