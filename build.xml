@@ -5,7 +5,6 @@
   <property name="target.dir" value="target"/>
   <property name="classes.dir" value="${target.dir}/classes"/>
   <property name="webapp.dir" value="${target.dir}/webapp"/>
-  <property name="jar.file" location="${target.dir}/${ant.project.name}.jar"/>
 
   <!-- bring in our standard build support -->
   <property name="ooo-build.vers" value="2.9"/>
@@ -28,6 +27,29 @@
     <copy todir="${webapp.dir}">
       <fileset dir="src/main/webapp" includes="**"/>
     </copy>
+
+    <mkdir dir="${webapp.dir}/WEB-INF/lib"/>
+    <copy todir="${webapp.dir}/WEB-INF/lib" flatten="true">
+      <fileset refid="pom.fileset"/>
+    </copy>
+  </target>
+
+  <!-- TODO: put this in Maven installable Ant bundle? -->
+  <target name="-init-jetty-ant" depends="-init-ooo">
+    <artifact:dependencies pathId="jetty-ant.classpath">
+      <dependency groupId="org.mortbay.jetty" artifactId="jetty-ant"
+                  version="6.1.25" scope="runtime" />
+      <dependency groupId="org.mortbay.jetty" artifactId="jetty-ajp"
+                  version="6.1.25" scope="runtime" />
+      <dependency groupId="org.mortbay.jetty" artifactId="jsp-2.1"
+                  version="6.1.14" scope="runtime" />
+    </artifact:dependencies>
+    <taskdef resource="tasks.properties"
+             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
+    <typedef name="selectChannelConnector" classname="org.mortbay.jetty.nio.SelectChannelConnector"
+             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
+    <typedef name="ajp13SocketConnector" classname="org.mortbay.jetty.ajp.Ajp13SocketConnector"
+             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
   </target>
 
   <target name="clean" description="Cleans out compilation results.">
@@ -42,7 +64,7 @@
     </i18nsync>
   </target>
 
-  <target name="compile" depends="-prepare,gmsgs" description="Compiles the Java code.">
+  <target name="compile" depends="-prepare,gmsgs" description="Compiles the code.">
     <mkdir dir="${classes.dir}"/>
 
     <ooojavac srcdir="${jsrc.dir}" destdir="${classes.dir}" version="1.6"
@@ -67,30 +89,24 @@
     </genasync>
   </target>
 
-  <target name="-init-jetty-ant" depends="-init-ooo">
-    <artifact:dependencies pathId="jetty-ant.classpath">
-      <dependency groupId="org.mortbay.jetty" artifactId="jetty-ant"
-                  version="6.1.25" scope="runtime" />
-      <dependency groupId="org.mortbay.jetty" artifactId="jetty-ajp"
-                  version="6.1.25" scope="runtime" />
-      <dependency groupId="org.mortbay.jetty" artifactId="jsp-2.1"
-                  version="6.1.14" scope="runtime" />
+  <target name="gcompile" depends="compile" description="Compiles Java to JavaScript.">
+    <artifact:dependencies pathId="gwt-dev.classpath">
+      <dependency groupId="com.google.gwt" artifactId="gwt-dev" version="2.4.0"/>
     </artifact:dependencies>
-    <taskdef resource="tasks.properties"
-             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
-    <typedef name="selectChannelConnector" classname="org.mortbay.jetty.nio.SelectChannelConnector"
-             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
-    <typedef name="ajp13SocketConnector" classname="org.mortbay.jetty.ajp.Ajp13SocketConnector"
-             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
+    <java fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <path refid="gwt-dev.classpath"/>
+        <path refid="build.classpath"/>
+        <pathelement path="${jsrc.dir}"/>
+      </classpath>
+      <jvmarg value="-Xmx512M"/>
+      <arg value="-war"/>
+      <arg value="${webapp.dir}"/>
+      <arg value="com.threerings.banguser.BangUserWebapp"/>
+    </java>
   </target>
 
   <target name="jetty" depends="compile,-init-jetty-ant">
-    <!-- copy our jar files into a place where Jetty can get them -->
-    <mkdir dir="${webapp.dir}/WEB-INF/lib"/>
-    <copy todir="${webapp.dir}/WEB-INF/lib" flatten="true">
-      <fileset refid="pom.fileset"/>
-    </copy>
-
     <!-- create a fake webapp that serves up the stock website -->
     <mkdir dir="${target.dir}/root-webapp"/>
     <mkdir dir="${target.dir}/root-webapp/WEB-INF"/>
@@ -109,7 +125,6 @@
       </webApp>
 
       <connectors>
-<!--        <ajp13SocketConnector port="${devmode.jetty.port}"/> -->
 	<selectChannelConnector port="8888"/>
       </connectors>
     </jetty>
@@ -135,30 +150,22 @@
     </java>
   </target>
 
-  <!-- TODO: this should gcompile and create the war file -->
-  <target name="package" depends="compile" description="Builds and jars the code.">
-    <jar destfile="${jar.file}">
-      <fileset dir="${classes.dir}" includes="**"/>
-      <!-- include our GWT source materials -->
-      <fileset dir="${jsrc.dir}" includes="**"/>
+  <target name="package" depends="gcompile" description="Builds everything into war file.">
+    <!-- define some package properties -->
+    <property name="threerings.user"  value="_threerings"/>
+    <property name="pkgroot.dir" value="${target.dir}/dpkg/${ant.project.name}"/>
+    <tstamp><format property="build.version" pattern="yyyyMMddHHmmss"/></tstamp>
+
+    <!-- create our war file right in the dpkg staging dir -->
+    <property name="approot.dir" value="${pkgroot.dir}/usr/share/jetty/webapps"/>
+    <mkdir dir="${approot.dir}"/>
+    <jar destfile="${approot.dir}/${ant.project.name}.war">
+      <fileset dir="${webapp.dir}" includes="**"/>
     </jar>
-  </target>
 
-  <target name="javadoc" depends="-prepare" description="Builds the Java documentation">
-    <mkdir dir="${target.dir}/docs"/>
-    <javadoc sourcepath="${jsrc.dir}" destdir="${target.dir}/docs"
-             additionalparam="-breakiterator" classpathref="build.classpath">
-      <link href="http://download.oracle.com/javase/6/docs/api/"/>
-      <link href="http://google-web-toolkit.googlecode.com/svn/javadoc/latest/"/>
-      <link href="http://samskivert.github.com/samskivert/apidocs/"/>
-    </javadoc>
-  </target>
-
-  <target name="install" depends="package" description="Installs to local Maven repository.">
-    <maveninstall file="${jar.file}" pom="pom.xml"/>
-  </target>
-
-  <target name="deploy" depends="package,javadoc" description="Deploys to remote Maven repository.">
-    <mavendeploy file="${jar.file}" pom="pom.xml" srcdir="${jsrc.dir}" docdir="${target.dir}/docs"/>
+    <!-- create the debian package -->
+    <maventaskdef groupId="com.threerings.internal.ant" artifactId="dpkg" version="1.1"/>
+    <ooodpkg prefix="/usr/share/jetty/webapps" destroot="${pkgroot.dir}" version="${build.version}"
+             name="${ant.project.name}" description="Bang User Webapp"/>
   </target>
 </project>
