@@ -33,4 +33,8 @@ public class BangSiteConfig extends SimpleSiteConfig
     @Override public AbstractPage createCreatePage (PageContext ctx) {
         return new CreateLoginPage(ctx);
     }
+
+    @Override public AbstractPage createAccountPage (PageContext ctx) {
+        return new BangAccountPage(ctx);
+    }
 }

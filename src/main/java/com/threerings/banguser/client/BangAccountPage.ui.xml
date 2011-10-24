@@ -1,0 +1,64 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             ui:generateFormat="com.google.gwt.i18n.rebind.format.PropertiesFormat"
+             ui:generateKeys="com.google.gwt.i18n.rebind.keygen.MD5KeyGenerator"
+             ui:generateLocales="default">
+  <ui:with type="com.threerings.user.client.PageStyles" field="_css"/>
+
+  <g:HTMLPanel>
+    <g:Label ui:field="_loading">Loading...</g:Label>
+
+    <g:HTMLPanel ui:field="_contents" styleName="{_css.hidden}">
+      <p>
+        Below is the basic information that defines your account. From here,
+        you can set or change the email associated with your account as well as
+        reset your password.
+      </p>
+
+      <p>
+        You are logged in on the <b><g:InlineLabel ui:field="_username"/></b> account.
+        <g:InlineLabel ui:field="_access"/>
+      </p>
+
+      <div style="width: 750px; margin: auto">
+        <div style="width: 400px; float: left; margin-right: 30px">
+          <h3>Update yer email address</h3>
+          <img src="/images/horizontalbar.gif"/><br/>
+          <div>
+            This email address is only used to validate your account (i.e. in case
+            you forget your password).
+          </div>
+          <g:SimplePanel ui:field="_changeEmail"/>
+
+          <h3>Change yer password</h3>
+          <img src="/images/horizontalbar.gif"/><br/>
+          <div>
+            This is the same password you will use to log on to the game. Please be
+            sure to keep it secure and never share it with others!
+          </div>
+          <g:SimplePanel ui:field="_changePassword"/>
+        </div>
+
+        <div style="width: 300px; float: left">
+          <h3>Payment Details</h3>
+          <img src="/images/horizontalbar.gif"/><br/>
+          <div>
+            Click below to make a payment or check previous transactions from
+            our secure server.
+          </div>
+          <g:Button ui:field="_billing">Got to Billing</g:Button>
+
+          <h3>Logged in:</h3>
+          <img src="/images/horizontalbar.gif"/><br/>
+          <g:SimplePanel ui:field="_logout"/>
+
+          <h3>Create new account</h3>
+          <img src="/images/horizontalbar.gif"/><br/>
+          <g:Button ui:field="_create">Create</g:Button>
+        </div>
+      </div>
+      <br style="clear: both"/>
+    </g:HTMLPanel>
+  </g:HTMLPanel>
+</ui:UiBinder>
