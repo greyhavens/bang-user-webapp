@@ -4,7 +4,7 @@
 <web-app>
   <servlet>
     <servlet-name>userServlet</servlet-name>
-    <servlet-class>com.threerings.user.server.UserServlet</servlet-class>
+    <servlet-class>com.threerings.banguser.server.BangUserServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
