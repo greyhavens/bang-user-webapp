@@ -133,7 +133,7 @@
       <!-- this serves up our webapp -->
       <webApp name="${ant.project.name}" warfile="${webapp.dir}" contextpath="/account"
               scanIntervalSeconds="2">
-        <classes dir="${target.dir}/classes"/>
+        <classes dir="${classes.dir}"/>
         <lib dir="${webapp.dir}/WEB-INF/lib" includes="*.jar"/>
       </webApp>
 
