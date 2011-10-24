@@ -3,13 +3,16 @@
   <property name="jsrc.dir" value="src/main/java"/>
   <property name="ssrc.dir" value="src/main/scala"/>
   <property name="target.dir" value="target"/>
-  <property name="classes.dir" value="${target.dir}/classes"/>
   <property name="webapp.dir" value="${target.dir}/webapp"/>
+  <property name="classes.dir" value="${webapp.dir}/WEB-INF/classes"/>
 
   <!-- bring in our standard build support -->
   <property name="ooo-build.vers" value="2.9"/>
   <ant antfile="etc/bootstrap.xml"/>
   <import file="${user.home}/.m2/ooo-build/${ooo-build.vers}/ooo-build.xml"/>
+
+  <!-- this will be overridden by the build server -->
+  <property name="ooo.distribution" value="local"/>
 
   <target name="-prepare" depends="-init-ooo">
     <mkdir dir="${target.dir}"/>
@@ -32,6 +35,18 @@
     <copy todir="${webapp.dir}/WEB-INF/lib" flatten="true">
       <fileset refid="pom.fileset"/>
     </copy>
+
+    <!-- obtain our configuration files -->
+    <mkdir dir="${classes.dir}"/>
+    <maventaskdef groupId="com.threerings.internal.ant" artifactId="gatherconfiguration"
+                  version="1.3"/>
+    <internalgather app="threerings" dest="${classes.dir}" distribution="${ooo.distribution}">
+      <sources refid="ooo.oooconfig.source"/>
+      <sources><directory path="${basedir}/etc"/></sources>
+      <files>
+        <file name="oooauth.properties"/>
+      </files>
+    </internalgather>
   </target>
 
   <!-- TODO: put this in Maven installable Ant bundle? -->
@@ -65,8 +80,6 @@
   </target>
 
   <target name="compile" depends="-prepare,gmsgs" description="Compiles the code.">
-    <mkdir dir="${classes.dir}"/>
-
     <ooojavac srcdir="${jsrc.dir}" destdir="${classes.dir}" version="1.6"
         classpathref="pom.classpath"/>
 
