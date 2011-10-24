@@ -1,0 +1,29 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             ui:generateFormat="com.google.gwt.i18n.rebind.format.PropertiesFormat"
+             ui:generateKeys="com.google.gwt.i18n.rebind.keygen.MD5KeyGenerator"
+             ui:generateLocales="default">
+  <ui:with type="com.threerings.user.client.PageStyles" field="_css"/>
+
+  <g:HTMLPanel>
+    <p>
+      To play Bang! Howdy, you must have an account, which you can create
+      here.
+    </p>
+
+    <p>
+      Note: users of other Three Rings sites (Yohoho! Puzzle Pirates or Game
+      Gardens) do not need to create a new account. Your existing account will
+      work, but please login and make sure your email address is up to date.
+    </p>
+
+    <h3>Login to an existing account</h3>
+    <img src="/images/horizontalbar.gif"/><br/>
+    <g:SimplePanel ui:field="_login"/>
+
+    <h3>Create a new account</h3>
+    <img src="/images/horizontalbar.gif"/><br/>
+    <g:SimplePanel ui:field="_create"/>
+  </g:HTMLPanel>
+</ui:UiBinder>

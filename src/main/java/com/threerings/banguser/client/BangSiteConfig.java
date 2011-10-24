@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.threerings.gwt.ui.Widgets;
 
+import com.threerings.user.client.AbstractPage;
 import com.threerings.user.client.PageContext;
 import com.threerings.user.client.simple.SimpleSiteConfig;
 
@@ -23,5 +24,13 @@ public class BangSiteConfig extends SimpleSiteConfig
 
     @Override public Widget createFooter (PageContext ctx) {
         return null;
+    }
+
+    @Override public AbstractPage createLoginPage (PageContext ctx) {
+        return new CreateLoginPage(ctx);
+    }
+
+    @Override public AbstractPage createCreatePage (PageContext ctx) {
+        return new CreateLoginPage(ctx);
     }
 }
