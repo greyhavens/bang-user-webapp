@@ -47,7 +47,7 @@
             Click below to make a payment or check previous transactions from
             our secure server.
           </div>
-          <g:Button ui:field="_billing">Got to Billing</g:Button>
+          <g:Button ui:field="_billing">Go to Billing</g:Button>
 
           <h3>Logged in:</h3>
           <img src="/images/horizontalbar.gif"/><br/>
