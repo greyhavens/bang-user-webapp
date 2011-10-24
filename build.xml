@@ -4,6 +4,7 @@
   <property name="ssrc.dir" value="src/main/scala"/>
   <property name="target.dir" value="target"/>
   <property name="classes.dir" value="${target.dir}/classes"/>
+  <property name="webapp.dir" value="${target.dir}/webapp"/>
   <property name="jar.file" location="${target.dir}/${ant.project.name}.jar"/>
 
   <!-- bring in our standard build support -->
@@ -14,13 +15,19 @@
   <target name="-prepare" depends="-init-ooo">
     <mkdir dir="${target.dir}"/>
 
-    <artifact:dependencies pathId="pom.classpath">
+    <artifact:dependencies pathId="pom.classpath" filesetId="pom.fileset">
       <pom file="pom.xml"/>
     </artifact:dependencies>
     <path id="build.classpath">
       <path refid="pom.classpath"/>
       <pathelement location="${classes.dir}"/>
     </path>
+
+    <!-- copy the webapp bits -->
+    <mkdir dir="${webapp.dir}"/>
+    <copy todir="${webapp.dir}">
+      <fileset dir="src/main/webapp" includes="**"/>
+    </copy>
   </target>
 
   <target name="clean" description="Cleans out compilation results.">
@@ -60,6 +67,54 @@
     </genasync>
   </target>
 
+  <target name="-init-jetty-ant" depends="-init-ooo">
+    <artifact:dependencies pathId="jetty-ant.classpath">
+      <dependency groupId="org.mortbay.jetty" artifactId="jetty-ant"
+                  version="6.1.25" scope="runtime" />
+      <dependency groupId="org.mortbay.jetty" artifactId="jetty-ajp"
+                  version="6.1.25" scope="runtime" />
+      <dependency groupId="org.mortbay.jetty" artifactId="jsp-2.1"
+                  version="6.1.14" scope="runtime" />
+    </artifact:dependencies>
+    <taskdef resource="tasks.properties"
+             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
+    <typedef name="selectChannelConnector" classname="org.mortbay.jetty.nio.SelectChannelConnector"
+             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
+    <typedef name="ajp13SocketConnector" classname="org.mortbay.jetty.ajp.Ajp13SocketConnector"
+             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
+  </target>
+
+  <target name="jetty" depends="compile,-init-jetty-ant">
+    <!-- copy our jar files into a place where Jetty can get them -->
+    <mkdir dir="${webapp.dir}/WEB-INF/lib"/>
+    <copy todir="${webapp.dir}/WEB-INF/lib" flatten="true">
+      <fileset refid="pom.fileset"/>
+    </copy>
+
+    <!-- create a fake webapp that serves up the stock website -->
+    <mkdir dir="${target.dir}/root-webapp"/>
+    <mkdir dir="${target.dir}/root-webapp/WEB-INF"/>
+    <copy tofile="${target.dir}/root-webapp/WEB-INF/web.xml" file="etc/howdy-web.xml"/>
+
+    <!-- Fire up the webapp against the live sources -->
+    <jetty tempDirectory="${target.dir}/jetty-temp">
+      <!-- this serves up the stock website files -->
+      <webApp name="root" warfile="${target.dir}/root-webapp" contextpath="/"/>
+
+      <!-- this serves up our webapp -->
+      <webApp name="${ant.project.name}" warfile="${webapp.dir}" contextpath="/account"
+              scanIntervalSeconds="2">
+        <classes dir="${target.dir}/classes"/>
+        <lib dir="${webapp.dir}/WEB-INF/lib" includes="*.jar"/>
+      </webApp>
+
+      <connectors>
+<!--        <ajp13SocketConnector port="${devmode.jetty.port}"/> -->
+	<selectChannelConnector port="8888"/>
+      </connectors>
+    </jetty>
+  </target>
+
   <target name="gdevmode" depends="compile" description="Runs GWT devmode.">
     <artifact:dependencies pathId="gwt-dev.classpath">
       <dependency groupId="com.google.gwt" artifactId="gwt-dev" version="2.4.0"/>
@@ -71,9 +126,12 @@
         <pathelement path="${jsrc.dir}"/>
       </classpath>
       <jvmarg value="-Xmx512M"/>
+      <arg value="-noserver"/>
       <arg value="-war"/>
-      <arg value="${target.dir}/webapp"/>
-      <arg value="com.threerings.user.UserWebapp"/>
+      <arg value="${webapp.dir}"/>
+      <arg value="-startupUrl"/>
+      <arg value="/account/"/>
+      <arg value="com.threerings.banguser.BangUserWebapp"/>
     </java>
   </target>
 
