@@ -182,7 +182,7 @@
              name="${ant.project.name}" description="Bang User Webapp"/>
   </target>
 
-  <target name="bamboo" depends="package" description="Builds & deploys dpkg, then cleans up.">
+  <target name="bamboo" depends="package" description="Builds + deploys dpkg, then cleans up.">
     <aptupdate/>
     <antcall target="clean"/>
   </target>
