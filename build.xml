@@ -163,7 +163,7 @@
     </java>
   </target>
 
-  <target name="package" depends="gcompile" description="Builds everything into war file.">
+  <target name="package" depends="gcompile" description="Builds everything into dpkg.">
     <!-- define some package properties -->
     <property name="threerings.user"  value="_threerings"/>
     <property name="pkgroot.dir" value="${target.dir}/dpkg/${ant.project.name}"/>
@@ -180,5 +180,10 @@
     <maventaskdef groupId="com.threerings.internal.ant" artifactId="dpkg" version="1.1"/>
     <ooodpkg prefix="/usr/share/jetty/webapps" destroot="${pkgroot.dir}" version="${build.version}"
              name="${ant.project.name}" description="Bang User Webapp"/>
+  </target>
+
+  <target name="bamboo" depends="package" description="Builds & deploys dpkg, then cleans up.">
+    <aptupdate/>
+    <antcall target="clean"/>
   </target>
 </project>
