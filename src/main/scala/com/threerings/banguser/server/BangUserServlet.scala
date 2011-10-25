@@ -17,4 +17,6 @@ class BangUserServlet extends UserServlet
     val props = ConfigUtil.loadProperties("oooauth.properties")
     new StaticConnectionProvider(PropertiesUtil.getSubProperties(props, "db"))
   }
+
+  override protected def getTemplatePath (templateId :String) = "bang/" + templateId + ".tmpl"
 }

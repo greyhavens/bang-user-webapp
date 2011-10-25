@@ -80,6 +80,7 @@
   </target>
 
   <target name="compile" depends="-prepare,gmsgs" description="Compiles the code.">
+    <copy todir="${classes.dir}"><fileset dir="src/main/resources" includes="**"/></copy>
     <ooojavac srcdir="${jsrc.dir}" destdir="${classes.dir}" version="1.6"
         classpathref="pom.classpath"/>
 
