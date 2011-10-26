@@ -12,6 +12,15 @@
     <url-pattern>/banguser/user</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>validateServlet</servlet-name>
+    <servlet-class>com.threerings.user.server.ValidateServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>validateServlet</servlet-name>
+    <url-pattern>/validate/*</url-pattern>
+  </servlet-mapping>
+
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
   </welcome-file-list>
