@@ -63,8 +63,6 @@
              classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
     <typedef name="selectChannelConnector" classname="org.mortbay.jetty.nio.SelectChannelConnector"
              classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
-    <typedef name="ajp13SocketConnector" classname="org.mortbay.jetty.ajp.Ajp13SocketConnector"
-             classpathref="jetty-ant.classpath" loaderref="jetty.loader"/>
   </target>
 
   <target name="clean" description="Cleans out compilation results.">
