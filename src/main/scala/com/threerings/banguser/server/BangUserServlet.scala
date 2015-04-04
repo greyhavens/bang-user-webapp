@@ -3,7 +3,7 @@
 
 package com.threerings.banguser.server
 
-import com.samskivert.jdbc.{ConnectionProvider, StaticConnectionProvider}
+import com.samskivert.depot.{ConnectionProvider, StaticConnectionProvider}
 import com.samskivert.util.{ConfigUtil, PropertiesUtil}
 
 import com.threerings.user.server.UserServlet

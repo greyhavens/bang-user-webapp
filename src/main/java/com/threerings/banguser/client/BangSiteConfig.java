@@ -8,6 +8,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.threerings.gwt.ui.Widgets;
 
 import com.threerings.user.client.AbstractPage;
+import com.threerings.user.client.OOOPage;
+import com.threerings.user.client.Page;
 import com.threerings.user.client.PageContext;
 import com.threerings.user.client.simple.SimpleSiteConfig;
 
@@ -26,15 +28,17 @@ public class BangSiteConfig extends SimpleSiteConfig
         return null;
     }
 
-    @Override public AbstractPage createLoginPage (PageContext ctx) {
-        return new CreateLoginPage(ctx);
-    }
+    @Override public AbstractPage createPage (Page page, PageContext ctx) {
+        if (!(page instanceof OOOPage)) {
+            return null;
+        }
 
-    @Override public AbstractPage createCreatePage (PageContext ctx) {
-        return new CreateLoginPage(ctx);
-    }
-
-    @Override public AbstractPage createAccountPage (PageContext ctx) {
-        return new BangAccountPage(ctx);
+        OOOPage oooPage = (OOOPage)page;
+        switch (oooPage) {
+        case LOGIN: return new CreateLoginPage(ctx);
+        case CREATE: return new CreateLoginPage(ctx);
+        case ACCOUNT: return new BangAccountPage(ctx);
+        default: return super.createPage(page, ctx);
+        }
     }
 }

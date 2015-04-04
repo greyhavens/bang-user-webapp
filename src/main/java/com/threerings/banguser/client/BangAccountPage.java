@@ -13,7 +13,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.threerings.user.client.Args;
-import com.threerings.user.client.Page;
+import com.threerings.user.client.OOOPage;
 import com.threerings.user.client.PageContext;
 import com.threerings.user.client.simple.SimpleAccountPage;
 import com.threerings.user.rpc.AccountInfo;
@@ -34,7 +34,7 @@ public class BangAccountPage extends SimpleAccountPage
 
         _create.addClickHandler(new ClickHandler() {
             public void onClick (ClickEvent event) {
-                Args.go(Page.CREATE);
+                Args.go(OOOPage.CREATE);
             }
         });
 
