@@ -25,7 +25,11 @@ public class CreateLoginPage extends AbstractPage
         initWidget(_binder.createAndBindUi(this));
 
         _login.setWidget(_loginPanel = new LoginPanel(ctx, true));
-        _create.setWidget(new CreatePanel(ctx, false));
+        _create.setWidget(new CreatePanel(ctx, false) {
+            protected String getTosLink () {
+                return "/support/tos.html";
+            }
+        });
     }
 
     @Override protected void onArgsChange (Args args) {
