@@ -36,6 +36,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-codeserver</artifactId>
+      <version>${gwt.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.threerings</groupId>
       <artifactId>gwt-utils</artifactId>
       <version>${gwtutils.version}</version>
@@ -94,6 +101,7 @@
           <modules>
             <module>${gwt.module}</module>
           </modules>
+          <runTarget>index.html</runTarget>
         </configuration>
         <executions>
           <execution>
